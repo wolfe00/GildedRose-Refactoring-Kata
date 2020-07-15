@@ -275,7 +275,7 @@ namespace csharpcore
 
 
         [Fact]
-        public void CheckBackstagePassValueNeverStepsOver50()
+        public void CheckBackstagePassValueNeverStepsOverMax()
         {
             IList<Item> Items = new List<Item>
             {
@@ -291,7 +291,7 @@ namespace csharpcore
         }
         
         [Fact]
-        public void CheckBackstagePassValueNeverJumpsOver50()
+        public void CheckBackstagePassValueNeverJumpsOverMax()
         {
             IList<Item> Items = new List<Item>
             {
@@ -350,6 +350,227 @@ namespace csharpcore
             app.UpdateQuality();
             Assert.Equal(0, Items[0].Quality);
             Assert.Equal(0, Items[1].Quality);
+        }
+
+        [Fact]
+        public void CheckConjuredSulfurasBehavesLikeSulfuras()
+        {
+            IList<Item> Items = new List<Item>
+            {
+                new Item { Name = "Conjured Sulfuras, Hand of Ragnaros", SellIn = -5, Quality = 80 },
+                new Item { Name = "Conjured Sulfuras, Hand of Ragnaros", SellIn = 0, Quality = 80 },
+                new Item { Name = "Conjured Sulfuras, Hand of Ragnaros", SellIn = 10, Quality = 80 }
+            };
+            GildedRose app = new GildedRose(Items);
+            app.UpdateQuality();
+            Assert.Equal(80, Items[0].Quality); 
+            Assert.Equal(80, Items[1].Quality);
+            Assert.Equal(80, Items[2].Quality);
+            Assert.Equal(-5, Items[0].SellIn); 
+            Assert.Equal(0, Items[1].SellIn);
+            Assert.Equal(10, Items[2].SellIn); 
+        }
+
+        [Fact]
+        public void CheckUnexpiredConjuredAgedBrieAges()
+        {
+            IList<Item> Items = new List<Item>
+            {
+                new Item { Name = "Conjured Aged Brie", SellIn = 10, Quality = 20 }
+            };
+            
+            GildedRose app = new GildedRose(Items);
+            app.UpdateQuality();
+            Assert.Equal(22, Items[0].Quality);
+        }
+        
+        [Fact]
+        public void CheckExpiredConjuredAgedBrieAges()
+        {
+            IList<Item> Items = new List<Item>
+            {
+                new Item { Name = "Conjured Aged Brie", SellIn = -10, Quality = 20 }
+            };
+            
+            GildedRose app = new GildedRose(Items);
+            app.UpdateQuality();
+            Assert.Equal(24, Items[0].Quality);
+        }
+        
+        [Fact]
+        public void CheckConjuredAgedBrieEdgeCase()
+        {
+            IList<Item> Items = new List<Item>
+            {
+                new Item { Name = "Conjured Aged Brie", SellIn = 0, Quality = 20 },
+                new Item { Name = "Conjured Aged Brie", SellIn = 1, Quality = 20 }
+            };
+            
+            GildedRose app = new GildedRose(Items);
+            app.UpdateQuality();
+            Assert.Equal(24, Items[0].Quality);
+            Assert.Equal(22, Items[1].Quality);
+        }
+        
+        [Fact]
+        public void CheckConjuredAgedBrieValueNeverStepsOverMax()
+        {
+            IList<Item> Items = new List<Item>
+            {
+                new Item { Name = "Conjured Aged Brie", SellIn = -5, Quality = 50 },
+                new Item { Name = "Conjured Aged Brie", SellIn = 0, Quality = 50 },
+                new Item { Name = "Conjured Aged Brie", SellIn = 1, Quality = 50 }
+            };
+            
+            GildedRose app = new GildedRose(Items);
+            app.UpdateQuality();
+            Assert.Equal(50, Items[0].Quality);
+            Assert.Equal(50, Items[1].Quality);
+            Assert.Equal(50, Items[2].Quality);
+        }
+        
+        [Fact]
+        public void CheckConjuredAgedBrieValueNeverJumpsOverMax()
+        {
+            IList<Item> Items = new List<Item>
+            {
+                new Item { Name = "Conjured Aged Brie", SellIn = -5, Quality = 49 },
+                new Item { Name = "Conjured Aged Brie", SellIn = 0, Quality = 49 },
+            };
+            GildedRose app = new GildedRose(Items);
+            app.UpdateQuality();
+            Assert.Equal(50, Items[0].Quality);
+            Assert.Equal(50, Items[1].Quality);
+        }
+        
+        [Fact]
+        public void CheckNonValuableConjuredBackstagePassesBehaveNormallyAwayFromExpiry()
+        {
+            IList<Item> Items = new List<Item> {new Item { Name = "Conjured Backstage passes to a TAFKAL80ETC concert", SellIn = 20, Quality = 30 }};
+            GildedRose app = new GildedRose(Items);
+            app.UpdateQuality();
+            Assert.Equal(32, Items[0].Quality);
+        }
+        
+        [Fact]
+        public void CheckNonValuableConjuredBackstagePassesBehaveProperly6to10DaysFromExpiry()
+        {
+            IList<Item> Items = new List<Item> {new Item { Name = "Conjured Backstage passes to a TAFKAL80ETC concert", SellIn = 7, Quality = 30 }};
+            GildedRose app = new GildedRose(Items);
+            app.UpdateQuality();
+            Assert.Equal(34, Items[0].Quality);
+        }
+        
+        [Fact]
+        public void CheckNonValuableConjuredBackstagePassesBehaveProperly1to5DaysFromExpiry()
+        {
+            IList<Item> Items = new List<Item> {new Item { Name = "Conjured Backstage passes to a TAFKAL80ETC concert", SellIn = 3, Quality = 30 }};
+            GildedRose app = new GildedRose(Items);
+            app.UpdateQuality();
+            Assert.Equal(36, Items[0].Quality);
+        }
+        
+        [Fact]
+        public void CheckConjuredBackstagePassesExpire()
+        {
+            IList<Item> Items = new List<Item> {new Item { Name = "Conjured Backstage passes to a TAFKAL80ETC concert", SellIn = 0, Quality = 30 }};
+            GildedRose app = new GildedRose(Items);
+            app.UpdateQuality();
+            Assert.Equal(0, Items[0].Quality);
+        }
+        
+        [Fact]
+        public void CheckConjuredBackstagePassesOverexpire()
+        {
+            IList<Item> Items = new List<Item> {new Item { Name = "Conjured Backstage passes to a TAFKAL80ETC concert", SellIn = -5, Quality = 30 }};
+            GildedRose app = new GildedRose(Items);
+            app.UpdateQuality();
+            Assert.Equal(0, Items[0].Quality);
+        }
+        
+        [Fact]
+        public void CheckNonValuableConjuredBackstagePassEdgeDays10and11()
+        {
+            IList<Item> Items = new List<Item>
+            {
+                new Item { Name = "Conjured Backstage passes to a TAFKAL80ETC concert", SellIn = 10, Quality = 30 },
+                new Item { Name = "Conjured Backstage passes to a TAFKAL80ETC concert", SellIn = 11, Quality = 30 }
+            };
+            GildedRose app = new GildedRose(Items);
+            app.UpdateQuality();
+            Assert.Equal(34, Items[0].Quality);
+            Assert.Equal(32, Items[1].Quality);
+        }
+        
+        [Fact]
+        public void CheckNonValuableConjuredBackstagePassEdgeDays5and6()
+        {
+            IList<Item> Items = new List<Item>
+            {
+                new Item { Name = "Conjured Backstage passes to a TAFKAL80ETC concert", SellIn = 5, Quality = 30 },
+                new Item { Name = "Conjured Backstage passes to a TAFKAL80ETC concert", SellIn = 6, Quality = 30 }
+            };
+            GildedRose app = new GildedRose(Items);
+            app.UpdateQuality();
+            Assert.Equal(36, Items[0].Quality);
+            Assert.Equal(34, Items[1].Quality);
+        }
+        
+        [Fact]
+        public void CheckNonValuableConjuredBackstagePassEdgeDays0and1()
+        {
+            IList<Item> Items = new List<Item>
+            {
+                new Item { Name = "Conjured Backstage passes to a TAFKAL80ETC concert", SellIn = 0, Quality = 30 },
+                new Item { Name = "Conjured Backstage passes to a TAFKAL80ETC concert", SellIn = 1, Quality = 30 }
+            };
+            GildedRose app = new GildedRose(Items);
+            app.UpdateQuality();
+            Assert.Equal(0, Items[0].Quality);
+            Assert.Equal(36, Items[1].Quality);
+        }
+
+
+        [Fact]
+        public void CheckConjuredBackstagePassValueNeverStepsOverMax()
+        {
+            IList<Item> Items = new List<Item>
+            {
+                new Item { Name = "Conjured Backstage passes to a TAFKAL80ETC concert", SellIn = 2, Quality = 50 },
+                new Item { Name = "Conjured Backstage passes to a TAFKAL80ETC concert", SellIn = 7, Quality = 50 },
+                new Item { Name = "Conjured Backstage passes to a TAFKAL80ETC concert", SellIn = 12, Quality = 50 }
+            };
+            GildedRose app = new GildedRose(Items);
+            app.UpdateQuality();
+            Assert.Equal(50, Items[0].Quality);
+            Assert.Equal(50, Items[1].Quality);
+            Assert.Equal(50, Items[2].Quality);
+        }
+        
+        [Fact]
+        public void CheckConjuredBackstagePassValueNeverJumpsOverMax()
+        {
+            IList<Item> Items = new List<Item>
+            {
+                new Item { Name = "Conjured Backstage passes to a TAFKAL80ETC concert", SellIn = 2, Quality = 49 },
+                new Item { Name = "Conjured Backstage passes to a TAFKAL80ETC concert", SellIn = 7, Quality = 49 }
+            };
+            GildedRose app = new GildedRose(Items);
+            app.UpdateQuality();
+            Assert.Equal(50, Items[0].Quality);
+            Assert.Equal(50, Items[1].Quality);
+        }
+
+        [Fact]
+        public void CheckConjuredNeedsSpace()
+        {
+            IList<Item> Items = new List<Item>
+            {
+                new Item { Name = "ConjuredMagicalChicken", SellIn = 10, Quality = 30 }
+            };
+            GildedRose app = new GildedRose(Items);
+            app.UpdateQuality();
+            Assert.Equal(29, Items[0].Quality);
         }
     }
 }

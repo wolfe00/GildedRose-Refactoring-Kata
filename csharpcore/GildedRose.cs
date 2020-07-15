@@ -68,7 +68,7 @@ namespace csharpcore
                 increment *= 2;
             }
 
-            if (item.Name != "Sulfuras, Hand of Ragnaros")
+            if (ItemType(item) != "Sulfuras, Hand of Ragnaros")
             {
                 IncrementQuality(item, increment);
                 item.SellIn -= 1;
