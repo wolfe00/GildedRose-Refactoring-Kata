@@ -54,9 +54,8 @@ namespace csharpcore
         [Fact]
         public void CheckRegularQualityNeverDropsBelowZero()
         {
-            IList<Item> Items = new List<Item> { new Item { Name = "Just a regular item, nothing to see here", SellIn = 10, Quality = 1 } };
+            IList<Item> Items = new List<Item> { new Item { Name = "Just a regular item, nothing to see here", SellIn = 10, Quality = 0 } };
             GildedRose app = new GildedRose(Items);
-            app.UpdateQuality();
             app.UpdateQuality();
             Assert.Equal(0, Items[0].Quality);
         }
@@ -94,7 +93,7 @@ namespace csharpcore
         }
         
         [Fact]
-        public void CheckSulfurasNeverDecays()
+        public void CheckSulfurasQualityNeverDecays()
         {
             IList<Item> Items = new List<Item>
             {
@@ -107,6 +106,22 @@ namespace csharpcore
             Assert.Equal(80, Items[0].Quality); 
             Assert.Equal(80, Items[1].Quality);
             Assert.Equal(80, Items[2].Quality); 
+        }
+        
+        [Fact]
+        public void CheckSulfurasSellInNeverDecays()
+        {
+            IList<Item> Items = new List<Item>
+            {
+                new Item { Name = "Sulfuras, Hand of Ragnaros", SellIn = -5, Quality = 80 },
+                new Item { Name = "Sulfuras, Hand of Ragnaros", SellIn = 0, Quality = 80 },
+                new Item { Name = "Sulfuras, Hand of Ragnaros", SellIn = 10, Quality = 80 }
+            };
+            GildedRose app = new GildedRose(Items);
+            app.UpdateQuality();
+            Assert.Equal(-5, Items[0].SellIn); 
+            Assert.Equal(0, Items[1].SellIn);
+            Assert.Equal(10, Items[2].SellIn); 
         }
 
         [Fact]
@@ -199,7 +214,7 @@ namespace csharpcore
         }
         
         [Fact]
-        public void CheckBackstagePassesExpireProperly()
+        public void CheckBackstagePassesExpire()
         {
             IList<Item> Items = new List<Item> {new Item { Name = "Backstage passes to a TAFKAL80ETC concert", SellIn = 0, Quality = 30 }};
             GildedRose app = new GildedRose(Items);
@@ -208,27 +223,57 @@ namespace csharpcore
         }
         
         [Fact]
-        public void CheckNonValuableBackstagePassEdgeDaysBehaveProperly()
+        public void CheckBackstagePassesOverexpire()
+        {
+            IList<Item> Items = new List<Item> {new Item { Name = "Backstage passes to a TAFKAL80ETC concert", SellIn = -5, Quality = 30 }};
+            GildedRose app = new GildedRose(Items);
+            app.UpdateQuality();
+            Assert.Equal(0, Items[0].Quality);
+        }
+        
+        [Fact]
+        public void CheckNonValuableBackstagePassEdgeDays10and11()
         {
             IList<Item> Items = new List<Item>
             {
-                new Item { Name = "Backstage passes to a TAFKAL80ETC concert", SellIn = 0, Quality = 30 },
-                new Item { Name = "Backstage passes to a TAFKAL80ETC concert", SellIn = 1, Quality = 30 },
-                new Item { Name = "Backstage passes to a TAFKAL80ETC concert", SellIn = 5, Quality = 30 },
-                new Item { Name = "Backstage passes to a TAFKAL80ETC concert", SellIn = 6, Quality = 30 },
                 new Item { Name = "Backstage passes to a TAFKAL80ETC concert", SellIn = 10, Quality = 30 },
                 new Item { Name = "Backstage passes to a TAFKAL80ETC concert", SellIn = 11, Quality = 30 }
             };
             GildedRose app = new GildedRose(Items);
             app.UpdateQuality();
-            Assert.Equal(0, Items[0].Quality);
-            Assert.Equal(33, Items[1].Quality);
-            Assert.Equal(33, Items[2].Quality);
-            Assert.Equal(32, Items[3].Quality);
-            Assert.Equal(32, Items[4].Quality);
-            Assert.Equal(31, Items[5].Quality);
+            Assert.Equal(32, Items[0].Quality);
+            Assert.Equal(31, Items[1].Quality);
         }
         
+        [Fact]
+        public void CheckNonValuableBackstagePassEdgeDays5and6()
+        {
+            IList<Item> Items = new List<Item>
+            {
+                new Item { Name = "Backstage passes to a TAFKAL80ETC concert", SellIn = 5, Quality = 30 },
+                new Item { Name = "Backstage passes to a TAFKAL80ETC concert", SellIn = 6, Quality = 30 }
+            };
+            GildedRose app = new GildedRose(Items);
+            app.UpdateQuality();
+            Assert.Equal(33, Items[0].Quality);
+            Assert.Equal(32, Items[1].Quality);
+        }
+        
+        [Fact]
+        public void CheckNonValuableBackstagePassEdgeDays0and1()
+        {
+            IList<Item> Items = new List<Item>
+            {
+                new Item { Name = "Backstage passes to a TAFKAL80ETC concert", SellIn = 0, Quality = 30 },
+                new Item { Name = "Backstage passes to a TAFKAL80ETC concert", SellIn = 1, Quality = 30 }
+            };
+            GildedRose app = new GildedRose(Items);
+            app.UpdateQuality();
+            Assert.Equal(0, Items[0].Quality);
+            Assert.Equal(33, Items[1].Quality);
+        }
+
+
         [Fact]
         public void CheckBackstagePassValueNeverStepsOver50()
         {
