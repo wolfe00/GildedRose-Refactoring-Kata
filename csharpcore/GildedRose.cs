@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace csharpcore
 {
@@ -24,51 +25,75 @@ namespace csharpcore
 
         private static void UpdateItem(Item item)
         {
-            switch (item.Name)
+            var increment = 0;
+            switch (ItemType(item))
             {
                 case "Sulfuras, Hand of Ragnaros":
                     break;
                 
                 case "Aged Brie":
-                    item.Quality = !hasExpired(item)
-                        ? Math.Min(MaxQuality, item.Quality + 1)
-                        : Math.Min(MaxQuality, item.Quality + 2);
+                    increment = !HasExpired(item)
+                        ? 1
+                        : 2;
                     break;
                 
                 case "Backstage passes to a TAFKAL80ETC concert":
                     if (item.SellIn > 10)
                     {
-                        item.Quality = Math.Min(MaxQuality, item.Quality + 1);
+                        increment = 1;
                     }
                     else if (item.SellIn > 5)
                     {
-                        item.Quality = Math.Min(MaxQuality, item.Quality + 2);
+                        increment = 2;
                     }
                     else if (item.SellIn > 0)
                     {
-                        item.Quality = Math.Min(MaxQuality, item.Quality + 3);
+                        increment = 3;
                     }
                     else
                     {
-                        item.Quality = 0;
+                        increment = MinQuality - MaxQuality;
                     }
                     break;
                 
                 default:
-                    item.Quality = !hasExpired(item)
-                        ? Math.Max(MinQuality, item.Quality - 1)
-                        : Math.Max(MinQuality, item.Quality - 2);
+                    increment = !HasExpired(item)
+                        ? -1
+                        : -2;
                     break;
             }
-            
+
+            if (IsConjured(item))
+            {
+                increment *= 2;
+            }
+
             if (item.Name != "Sulfuras, Hand of Ragnaros")
             {
+                IncrementQuality(item, increment);
                 item.SellIn -= 1;
             }
         }
-        static bool hasExpired(Item item)
+        static bool HasExpired(Item item)
         {
             return item.SellIn <= 0;
+        }
+
+        static string ItemType(Item item)
+        {
+            return IsConjured(item) ? item.Name.Substring("Conjured ".Length, item.Name.Length - "Conjured ".Length) : item.Name;
+        }
+
+        static bool IsConjured(Item item)
+        {
+            return item.Name.Substring(0, "Conjured ".Length) == "Conjured ";
+        }
+
+        static void IncrementQuality(Item item, int increment)
+        {
+            item.Quality += increment;
+            item.Quality = Math.Min(MaxQuality, item.Quality);
+            item.Quality = Math.Max(MinQuality, item.Quality);
         }
     }
 }

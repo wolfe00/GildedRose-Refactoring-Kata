@@ -303,5 +303,53 @@ namespace csharpcore
             Assert.Equal(50, Items[0].Quality);
             Assert.Equal(50, Items[1].Quality);
         }
+        
+        [Fact]
+        public void CheckConjuredUnexpiredItemDecaysProperly()
+        {
+            IList<Item> Items = new List<Item> { new Item { Name = "Conjured Just a regular item, nothing to see here", SellIn = 10, Quality = 20 } };
+            GildedRose app = new GildedRose(Items);
+            app.UpdateQuality();
+            Assert.Equal(9, Items[0].SellIn);
+            Assert.Equal(18, Items[0].Quality);
+        }
+        
+        [Fact]
+        public void CheckConjuredExpiredItemDecaysProperly()
+        {
+            IList<Item> Items = new List<Item> { new Item { Name = "Conjured Just a regular item, nothing to see here", SellIn = -5, Quality = 20 } };
+            GildedRose app = new GildedRose(Items);
+            app.UpdateQuality();
+            Assert.True(Items[0].SellIn <= 0);
+            Assert.Equal(16, Items[0].Quality);
+        }
+
+        [Fact]
+        public void CheckConjuredExpiryEdgeCase()
+        {
+            IList<Item> Items = new List<Item> { new Item { Name = "Conjured Just a regular item, nothing to see here", SellIn = 1, Quality = 20 } };
+            GildedRose app = new GildedRose(Items);
+            Assert.Equal("Conjured Just a regular item, nothing to see here", Items[0].Name);
+            app.UpdateQuality();
+            Assert.Equal(0, Items[0].SellIn);
+            Assert.Equal(18, Items[0].Quality);
+            app.UpdateQuality();
+            Assert.True(Items[0].SellIn <= 0);
+            Assert.Equal(14, Items[0].Quality);
+        }
+
+        [Fact]
+        public void CheckConjuredQualityNeverJumpsBelowZero()
+        {
+            IList<Item> Items = new List<Item>
+            {
+                new Item { Name = "Conjured Just a regular item, nothing to see here", SellIn = 10, Quality = 1 },
+                new Item { Name = "Conjured Just a regular item, nothing to see here", SellIn = -5, Quality = 3 }
+            };
+            GildedRose app = new GildedRose(Items);
+            app.UpdateQuality();
+            Assert.Equal(0, Items[0].Quality);
+            Assert.Equal(0, Items[1].Quality);
+        }
     }
 }
